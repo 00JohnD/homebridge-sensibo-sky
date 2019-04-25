@@ -114,6 +114,9 @@ function SensiboPodAccessory(platform, device) {
 					case "heat":
 						callback(null, Characteristic.CurrentHeatingCoolingState.HEAT);
 						break;
+					case "auto":
+						callback(null, Characteristic.CurrentHeatingCoolingState.AUTO);
+						break;
 					case "fan":
 						callback(null, Characteristic.CurrentHeatingCoolingState.COOL);
 						break;
@@ -141,6 +144,9 @@ function SensiboPodAccessory(platform, device) {
 						break;
 					case "heat":
 						callback(null, Characteristic.TargetHeatingCoolingState.HEAT);
+						break;
+					case "auto":
+						callback(null, Characteristic.TargetHeatingCoolingState.AUTO);
 						break;
 					case "fan":
 						callback(null, Characteristic.TargetHeatingCoolingState.AUTO);
@@ -170,11 +176,7 @@ function SensiboPodAccessory(platform, device) {
 					that.state.targetAcState = true;
 					break;
 				case Characteristic.TargetHeatingCoolingState.AUTO:
-					if (that.state.targetTemperature <= that.temp.temperature) {
-						that.state.mode = "cool";
-					} else {
-						that.state.mode = "heat";
-					}
+					that.state.mode = "auto";
 					that.state.on = true;
 					that.state.targetAcState = true;
 					break;
