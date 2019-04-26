@@ -1,3 +1,7 @@
+This is a fork to add independent temp sensor (as per @orpolaczek's fork), 6 fan speed (as per @qkevinto's fork) and enable the use of the AC's auto mode.
+
+More to come
+
 # homebridge-sensibo-sky
 [Homebridge](https://github.com/nfarina/homebridge) platform plugin for the Sensibo Sky
 
