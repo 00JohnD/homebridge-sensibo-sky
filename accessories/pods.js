@@ -65,6 +65,7 @@ function SensiboPodAccessory(platform, device) {
 	that.state.AI = device.AI || false;
 	that.state.hideFan = (device.AI)?false:(device.hideFan || false); // if AI is true, hideFan will be meaningless. If AI is false and hideFan is true, will make fan 100% all the time
 	that.state.hideHumidity = device.hideHumidity || false;
+	that.state.hideTemp = device.hideTemp || false;
 	that.state.fixedState = device.fixedState;
 	that.state.refreshCycle = (device.refreshCycle*1000) || stateRefreshRate;
 	that.temp.temperature = 16; // float
@@ -376,6 +377,25 @@ function SensiboPodAccessory(platform, device) {
 			.getCharacteristic(Characteristic.CurrentRelativeHumidity)
 			.on("get", function(callback) {
 				callback(null, Math.round(that.temp.humidity)); // int value
+			});		
+	}
+
+	// Temperature Service
+	// Current Temperature characteristic
+	if (that.state.hideTemp) {
+		this.getService(Service.Thermostat)
+			.getCharacteristic(Characteristic.CurrentTemperature)
+			.on("get", function(callback) {
+				callback(null, Math.round(that.temp.temperature)); // int value
+			});
+
+	} else {
+		this.addService(Service.TemperatureSensor);
+
+		this.getService(Service.TemperatureSensor)
+			.getCharacteristic(Characteristic.CurrentTemperature)
+			.on("get", function(callback) {
+				callback(null, Math.round(that.temp.temperature)); // int value
 			});		
 	}
 
