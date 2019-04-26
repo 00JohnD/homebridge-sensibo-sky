@@ -5,7 +5,7 @@ const tempOffset = 1;
 const stateTimeout = 30000;  //in ms to min time elapse to call for refresh
 const tempTimeout = 10000;  //in ms to min time elapse before next call for refresh
 const stateRefreshRate = 30000; // Interval for status update
-const fanState = {auto:0, low:25, medium:50, medium_high:75, high:100};
+const fanState = {auto:1, quiet:15, low:25, medium:50, medium_high:75, high:100};
 
 
 /*
@@ -65,6 +65,7 @@ function SensiboPodAccessory(platform, device) {
 	that.state.AI = device.AI || false;
 	that.state.hideFan = (device.AI)?false:(device.hideFan || false); // if AI is true, hideFan will be meaningless. If AI is false and hideFan is true, will make fan 100% all the time
 	that.state.hideHumidity = device.hideHumidity || false;
+	that.state.hideTemp = device.hideTemp || false;
 	that.state.fixedState = device.fixedState;
 	that.state.refreshCycle = (device.refreshCycle*1000) || stateRefreshRate;
 	that.temp.temperature = 16; // float
@@ -114,6 +115,9 @@ function SensiboPodAccessory(platform, device) {
 					case "heat":
 						callback(null, Characteristic.CurrentHeatingCoolingState.HEAT);
 						break;
+					case "auto":
+						callback(null, Characteristic.CurrentHeatingCoolingState.AUTO);
+						break;
 					case "fan":
 						callback(null, Characteristic.CurrentHeatingCoolingState.COOL);
 						break;
@@ -141,6 +145,9 @@ function SensiboPodAccessory(platform, device) {
 						break;
 					case "heat":
 						callback(null, Characteristic.TargetHeatingCoolingState.HEAT);
+						break;
+					case "auto":
+						callback(null, Characteristic.TargetHeatingCoolingState.AUTO);
 						break;
 					case "fan":
 						callback(null, Characteristic.TargetHeatingCoolingState.AUTO);
@@ -170,11 +177,7 @@ function SensiboPodAccessory(platform, device) {
 					that.state.targetAcState = true;
 					break;
 				case Characteristic.TargetHeatingCoolingState.AUTO:
-					if (that.state.targetTemperature <= that.temp.temperature) {
-						that.state.mode = "cool";
-					} else {
-						that.state.mode = "heat";
-					}
+					that.state.mode = "auto";
 					that.state.on = true;
 					that.state.targetAcState = true;
 					break;
@@ -377,6 +380,25 @@ function SensiboPodAccessory(platform, device) {
 			});		
 	}
 
+	// Temperature Service
+	// Current Temperature characteristic
+	if (that.state.hideTemp) {
+		this.getService(Service.Thermostat)
+			.getCharacteristic(Characteristic.CurrentTemperature)
+			.on("get", function(callback) {
+				callback(null, Math.round(that.temp.temperature)); // int value
+			});
+
+	} else {
+		this.addService(Service.TemperatureSensor);
+
+		this.getService(Service.TemperatureSensor)
+			.getCharacteristic(Characteristic.CurrentTemperature)
+			.on("get", function(callback) {
+				callback(null, Math.round(that.temp.temperature)); // int value
+			});		
+	}
+
 
 
 }
@@ -388,17 +410,19 @@ function setFanLevel(that, value) {
 	if (that.state.hideFan) {
 		that.state.fanLevel = "high";
 	} else {
-		if (value == 0) {
+		if (value <= 5) {
 			that.state.fanLevel = "auto";
-		} else if (value <= 40) {
+		} else if (value <= fanState.quiet) {
+			that.state.fanLevel = "quiet"
+		} else if (value <= fanState.low) {
 			that.state.fanLevel = "low";
-		} else if (value <= 50) {
+		} else if (value <= fanState.medium) {
 			that.state.fanLevel = "medium"
-		} else if (value <= 75) {
+		} else if (value <= fanState.medium_high) {
 			that.state.fanLevel = "medium_high";
-		} else if (value <= 100) {
+		} else if (value <= fanState.high) {
 			that.state.fanLevel = "high";
-		} 
+		}
 	}
 
 	if ((curFanState != that.state.fanLevel) && (that.state.fanLevel!== undefined)) {

@@ -24,6 +24,7 @@ function SensiboPlatform(log, config) {
 	this.AI = config["ai"] || false; //default state for ai
 	this.hideHumidity = config["hideHumidity"] || false;
 	this.hideFan = config["hideFan"] || false;
+	this.hideTemp = config["hideTemp"] || false;
 	this.fixedState = config["fixedState"] || "auto";
 	this.api=sensibo;
 	this.log = log;
