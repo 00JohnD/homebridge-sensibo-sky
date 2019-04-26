@@ -5,7 +5,7 @@ const tempOffset = 1;
 const stateTimeout = 30000;  //in ms to min time elapse to call for refresh
 const tempTimeout = 10000;  //in ms to min time elapse before next call for refresh
 const stateRefreshRate = 30000; // Interval for status update
-const fanState = {auto:0, low:25, medium:50, medium_high:75, high:100};
+const fanState = {auto:1, quiet:15, low:25, medium:50, medium_high:75, high:100};
 
 
 /*
@@ -390,17 +390,19 @@ function setFanLevel(that, value) {
 	if (that.state.hideFan) {
 		that.state.fanLevel = "high";
 	} else {
-		if (value == 0) {
+		if (value <= 5) {
 			that.state.fanLevel = "auto";
-		} else if (value <= 40) {
+		} else if (value <= fanState.quiet) {
+			that.state.fanLevel = "quiet"
+		} else if (value <= fanState.low) {
 			that.state.fanLevel = "low";
-		} else if (value <= 50) {
+		} else if (value <= fanState.medium) {
 			that.state.fanLevel = "medium"
-		} else if (value <= 75) {
+		} else if (value <= fanState.medium_high) {
 			that.state.fanLevel = "medium_high";
-		} else if (value <= 100) {
+		} else if (value <= fanState.high) {
 			that.state.fanLevel = "high";
-		} 
+		}
 	}
 
 	if ((curFanState != that.state.fanLevel) && (that.state.fanLevel!== undefined)) {
